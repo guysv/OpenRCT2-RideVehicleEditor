@@ -59,7 +59,7 @@ export function toggleVehicleDragger(isPressed: boolean,
 				// Limit updates to 8 fps to avoid bringing down multiplayer servers
 				return;
 			}
-			const [tilePosition, trackPosition] = getPositionFromTool(args, rideVehicle[0]._type());
+			const [tilePosition, trackPosition] = getPositionFromTool(args, rideVehicle[0]._type(), rideVehicle[0]._id);
 			if (tilePosition && trackPosition && !equalCoordsXYZ(trackPosition, lastTrackPosition) ||
 				!trackPosition && tilePosition && !equalCoordsXYZ(tilePosition, lastPosition))
 			{
@@ -132,20 +132,20 @@ interface DragVehicleArgs
 /**
  * Get a possible position to drag the vehicle to.
  */
-function getPositionFromTool(args: ToolEventArgs, vehicleType: RideObjectVehicle | null): [CoordsXYZ | null, CarTrackLocation | null]
+function getPositionFromTool(args: ToolEventArgs, vehicleType: RideObjectVehicle | null, currentId: number): [CoordsXYZ | null, CarTrackLocation | null]
 {
-	const { /* entityId, */ mapCoords, tileElementIndex } = args;
+	const { entityId, mapCoords, tileElementIndex } = args;
 	let x: number | undefined, y: number | undefined, z: number | undefined;
 	let trackPosition: CarTrackLocation | null = null;
 
-	// if (!isUndefined(entityId))
-	// {
-	// 	const entity = map.getEntity(entityId);
-	// 	x = entity.x;
-	// 	y = entity.y;
-	// 	z = entity.z;
-	// }
-	/*else */ if (mapCoords && !isUndefined(tileElementIndex))
+	if (!isUndefined(entityId) && entityId !== currentId)
+	{
+		const entity = map.getEntity(entityId);
+		x = entity.x;
+		y = entity.y;
+		z = entity.z;
+	}
+	else if (mapCoords && !isUndefined(tileElementIndex))
 	{
 		x = (mapCoords.x + 16);
 		y = (mapCoords.y + 16);
@@ -174,13 +174,12 @@ function getPositionFromTool(args: ToolEventArgs, vehicleType: RideObjectVehicle
 			const iterator = map.getTrackIterator({x, y}, tileElementIndex);
 			if (!isNull(iterator)) {
 				trackPosition = {
-					x: iterator.position.x-16,
+					x: iterator.position.x-16, // back to block center
 					y: iterator.position.y-16,
 					z: iterator.position.z,
 					direction: element.direction,
 					trackType: element.trackType
 				};
-				// console.log("CATCHMEEEEEEEEEE", JSON.stringify(trackPosition));
 			}
 		}
 
@@ -226,9 +225,11 @@ function updateVehicleDrag(args: DragVehicleArgs): void
 		if (!isNull(args.position.trackProgress)) {
 			car.travelBy(getDistanceFromProgress(car, args.position.trackProgress));
 		} else {
-			// internally, travelBy calls MoveTo so the car will update to the holding
+			// internally, travelBy calls MoveTo so the car will render on the holding
 			// track
+			// HACK: we really need a car.trackProgress setter..
 			car.travelBy(getDistanceFromProgress(car, 1));
+			car.travelBy(getDistanceFromProgress(car, -1));
 		}
 	}
 
