@@ -150,8 +150,9 @@ export const mainWindow = window({
 									tooltip: "Drag stationary vehicles to new places on the map",
 									image: 5174, // SPR_PICKUP_BTN
 									isPressed: twoway(model._isDragging),
-									disabled: model._isPositionDisabled,
-									onChange: pressed => toggleVehicleDragger(pressed, model._selectedVehicle, model._x, model._y, model._z, () => model._isDragging.set(false))
+									disabled: model._isEditDisabled,
+									onChange: pressed => toggleVehicleDragger(pressed, model._selectedVehicle, model._xyz,
+										model._trackLocation, model._trackProgress, () => model._isDragging.set(false))
 								}),
 								toggle({
 									width: buttonSize, height: buttonSize,
