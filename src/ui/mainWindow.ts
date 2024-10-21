@@ -376,15 +376,15 @@ export const mainWindow = window({
 								format: model._formatPosition,
 								onChange: (_, incr) => model._modifyVehicle(setPositionZ, incr)
 							}),
-							positionSpinner({
+							labelSpinner({
 								_label: { text: "Seat spin:" },
 								minimum: 0,
 								maximum: 255,
-								disabled: model._isPositionDisabled,
+								disabled: model._isEditDisabled,
 								step: model._multiplier,
 								value: model._spin,
-								format: model._formatPosition,
-								onChange: (_, incr) => model._modifyVehicle(setSpin, incr)
+								wrapMode: "clampThenWrap",
+								onChange: value => model._modifyVehicle(setSpin, value)
 							})
 						]
 					}),
